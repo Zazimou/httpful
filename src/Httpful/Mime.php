@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Httpful;
 
@@ -23,7 +23,7 @@ class Mime
      * Map short name for a mime type
      * to a full proper mime type
      */
-    public static $mimes = array(
+    public static array $mimes = [
         'json'      => self::JSON,
         'xml'       => self::XML,
         'form'      => self::FORM,
@@ -36,7 +36,7 @@ class Mime
         'javascript'=> self::JS,
         'yaml'      => self::YAML,
         'csv'       => self::CSV,
-    );
+    ];
 
     /**
      * Get the full Mime Type name from a "short name".
@@ -44,7 +44,7 @@ class Mime
      * @param string $short_name common name for mime type (e.g. json)
      * @return string full mime type (e.g. application/json)
      */
-    public static function getFullMime($short_name)
+    public static function getFullMime(string $short_name): string
     {
         return array_key_exists($short_name, self::$mimes) ? self::$mimes[$short_name] : $short_name;
     }
@@ -53,7 +53,7 @@ class Mime
      * @param string $short_name
      * @return bool
      */
-    public static function supportsMimeType($short_name)
+    public static function supportsMimeType(string $short_name): bool
     {
         return array_key_exists($short_name, self::$mimes);
     }

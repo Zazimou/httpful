@@ -1,7 +1,7 @@
 {
     "name": "nategood/httpful",
     "description": "A Readable, Chainable, REST friendly, PHP HTTP Client",
-    "homepage": "http://github.com/nategood/httpful",
+    "homepage": "https://github.com/nategood/httpful",
     "license": "MIT",
     "keywords": ["http", "curl", "rest", "restful", "api", "requests"],
     "version": "0.3.2",
@@ -9,12 +9,16 @@
         {
             "name": "Nate Good",
             "email": "me@nategood.com",
-            "homepage": "http://nategood.com"
+            "homepage": "https://nategood.com"
         }
     ],
     "require": {
-        "php": ">=7.2",
-        "ext-curl": "*"
+        "php": ">=8.2",
+        "ext-curl": "*",
+        "ext-simplexml": "*",
+        "ext-xmlwriter": "*",
+        "ext-dom": "*",
+        "ext-fileinfo": "*"
     },
     "autoload": {
         "psr-0": {
@@ -22,6 +26,7 @@
         }
     },
     "require-dev": {
-        "phpunit/phpunit": "*"
+        "phpunit/phpunit": "*",
+        "ext-posix": "*"
     }
 }

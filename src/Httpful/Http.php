@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Httpful;
 
@@ -19,25 +19,25 @@ class Http
     /**
      * @return array of HTTP method strings
      */
-    public static function safeMethods()
+    public static function safeMethods(): array
     {
         return array(self::HEAD, self::GET, self::OPTIONS, self::TRACE);
     }
 
     /**
-     * @param string HTTP method
+     * @param string $method HTTP method
      * @return bool
      */
-    public static function isSafeMethod($method)
+    public static function isSafeMethod(string $method): bool
     {
         return in_array($method, self::safeMethods());
     }
 
     /**
-     * @param string HTTP method
+     * @param string $method HTTP method
      * @return bool
      */
-    public static function isUnsafeMethod($method)
+    public static function isUnsafeMethod(string $method): bool
     {
         return !in_array($method, self::safeMethods());
     }
@@ -45,7 +45,7 @@ class Http
     /**
      * @return array list of (always) idempotent HTTP methods
      */
-    public static function idempotentMethods()
+    public static function idempotentMethods(): array
     {
         // Though it is possible to be idempotent, POST
         // is not guarunteed to be, and more often than
@@ -54,33 +54,21 @@ class Http
     }
 
     /**
-     * @param string HTTP method
+     * @param string $method HTTP method
      * @return bool
      */
-    public static function isIdempotent($method)
+    public static function isIdempotent(string $method): bool
     {
-        return in_array($method, self::safeidempotentMethodsMethods());
+        return in_array($method, self::idempotentMethods());
     }
 
     /**
-     * @param string HTTP method
+     * @param string $method HTTP method
      * @return bool
      */
-    public static function isNotIdempotent($method)
+    public static function isNotIdempotent(string $method): bool
     {
         return !in_array($method, self::idempotentMethods());
-    }
-
-    /**
-     * @deprecated Technically anything *can* have a body,
-     * they just don't have semantic meaning.  So say's Roy
-     * http://tech.groups.yahoo.com/group/rest-discuss/message/9962
-     *
-     * @return array of HTTP method strings
-     */
-    public static function canHaveBody()
-    {
-        return array(self::POST, self::PUT, self::PATCH, self::OPTIONS);
     }
 
 }

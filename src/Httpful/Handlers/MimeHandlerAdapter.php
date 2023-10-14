@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /**
  * Handlers are used to parse and serialize payloads for specific
@@ -25,9 +25,9 @@ class MimeHandlerAdapter
 
     /**
      * @param string $body
-     * @return mixed
+     * @return object|array|string|null
      */
-    public function parse($body)
+    public function parse(string $body): object|array|string|null
     {
         return $body;
     }
@@ -36,18 +36,18 @@ class MimeHandlerAdapter
      * @param mixed $payload
      * @return string
      */
-    function serialize($payload)
+    function serialize(mixed $payload): string
     {
         return (string) $payload;
     }
 
     protected function stripBom($body)
     {
-        if ( substr($body,0,3) === "\xef\xbb\xbf" )  // UTF-8
+        if (str_starts_with($body, "\xef\xbb\xbf"))  // UTF-8
             $body = substr($body,3);
-        else if ( substr($body,0,4) === "\xff\xfe\x00\x00" || substr($body,0,4) === "\x00\x00\xfe\xff" )  // UTF-32
+        else if ( str_starts_with($body, "\xff\xfe\x00\x00") || str_starts_with($body, "\x00\x00\xfe\xff"))  // UTF-32
             $body = substr($body,4);
-        else if ( substr($body,0,2) === "\xff\xfe" || substr($body,0,2) === "\xfe\xff" )  // UTF-16
+        else if ( str_starts_with($body, "\xff\xfe") || str_starts_with($body, "\xfe\xff"))  // UTF-16
             $body = substr($body,2);
         return $body;
     }

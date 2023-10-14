@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 namespace Httpful;
 
 if (!defined('CURLPROXY_SOCKS4')) {

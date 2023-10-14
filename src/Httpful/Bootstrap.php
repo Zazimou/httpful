@@ -1,6 +1,11 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Httpful;
+
+use Httpful\Handlers\CsvHandler;
+use Httpful\Handlers\FormHandler;
+use Httpful\Handlers\JsonHandler;
+use Httpful\Handlers\XmlHandler;
 
 /**
  * Bootstrap class that facilitates autoloading.  A naive
@@ -14,12 +19,12 @@ class Bootstrap
     const DIR_GLUE = DIRECTORY_SEPARATOR;
     const NS_GLUE = '\\';
 
-    public static $registered = false;
+    public static bool $registered = false;
 
     /**
      * Register the autoloader and any other setup needed
      */
-    public static function init()
+    public static function init(): void
     {
         spl_autoload_register(array('\Httpful\Bootstrap', 'autoload'));
         self::registerHandlers();
@@ -30,15 +35,15 @@ class Bootstrap
      *
      * @param string $classname
      */
-    public static function autoload($classname)
+    public static function autoload(string $classname): void
     {
-        self::_autoload(dirname(dirname(__FILE__)), $classname);
+        self::_autoload(dirname(__FILE__, 2), $classname);
     }
 
     /**
      * Register the autoloader and any other setup needed
      */
-    public static function pharInit()
+    public static function pharInit(): void
     {
         spl_autoload_register(array('\Httpful\Bootstrap', 'pharAutoload'));
         self::registerHandlers();
@@ -49,7 +54,7 @@ class Bootstrap
      *
      * @param string $classname
      */
-    public static function pharAutoload($classname)
+    public static function pharAutoload(string $classname): void
     {
         self::_autoload('phar://httpful.phar', $classname);
     }
@@ -58,7 +63,7 @@ class Bootstrap
      * @param string $base
      * @param string $classname
      */
-    private static function _autoload($base, $classname)
+    private static function _autoload(string $base, string $classname): void
     {
         $parts      = explode(self::NS_GLUE, $classname);
         $path       = $base . self::DIR_GLUE . implode(self::DIR_GLUE, $parts) . '.php';
@@ -70,7 +75,7 @@ class Bootstrap
     /**
      * Register default mime handlers.  Is idempotent.
      */
-    public static function registerHandlers()
+    public static function registerHandlers(): void
     {
         if (self::$registered === true) {
             return;
@@ -79,10 +84,10 @@ class Bootstrap
         // @todo check a conf file to load from that instead of
         // hardcoding into the library?
         $handlers = array(
-            \Httpful\Mime::JSON => new \Httpful\Handlers\JsonHandler(),
-            \Httpful\Mime::XML  => new \Httpful\Handlers\XmlHandler(),
-            \Httpful\Mime::FORM => new \Httpful\Handlers\FormHandler(),
-            \Httpful\Mime::CSV  => new \Httpful\Handlers\CsvHandler(),
+            Mime::JSON => new JsonHandler(),
+            Mime::XML  => new XmlHandler(),
+            Mime::FORM => new FormHandler(),
+            Mime::CSV  => new CsvHandler(),
         );
 
         foreach ($handlers as $mime => $handler) {

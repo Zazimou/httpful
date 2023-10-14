@@ -37,6 +37,6 @@ if ($php_major < 5.4) {
         // cleanup after ourselves -- remove log file, shut down server
         global $pid;
         unlink("./server.log");
-        posix_kill($pid, SIGKILL);
+//        posix_kill($pid, SIGKILL);
     });
 }

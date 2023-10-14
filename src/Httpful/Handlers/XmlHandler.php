@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * Mime Type: application/xml
  *
@@ -8,51 +8,59 @@
 
 namespace Httpful\Handlers;
 
+use DOMDocument;
+use DOMException;
+use Exception;
+use ReflectionObject;
+use SimpleXMLElement;
+use XMLWriter;
+
 class XmlHandler extends MimeHandlerAdapter
 {
     /**
      *  @var string $namespace xml namespace to use with simple_load_string
      */
-    private $namespace;
+    private string $namespace;
 
     /**
      * @var int $libxml_opts see http://www.php.net/manual/en/libxml.constants.php
      */
-    private $libxml_opts;
+    private int $libxml_opts;
 
     /**
      * @param array $conf sets configuration options
      */
     public function __construct(array $conf = array())
     {
-        $this->namespace =      isset($conf['namespace']) ? $conf['namespace'] : '';
-        $this->libxml_opts =    isset($conf['libxml_opts']) ? $conf['libxml_opts'] : 0;
+        parent::__construct($conf);
+        $this->namespace = $conf['namespace'] ?? '';
+        $this->libxml_opts = $conf['libxml_opts'] ?? 0;
     }
 
     /**
      * @param string $body
-     * @return mixed
-     * @throws \Exception if unable to parse
+     * @return SimpleXMLElement|null
+     * @throws Exception if unable to parse
      */
-    public function parse($body)
+    public function parse(string $body): SimpleXMLElement|null
     {
         $body = $this->stripBom($body);
         if (empty($body))
             return null;
         $parsed = simplexml_load_string($body, null, $this->libxml_opts, $this->namespace);
         if ($parsed === false)
-            throw new \Exception("Unable to parse response as XML");
+            throw new Exception("Unable to parse response as XML");
         return $parsed;
     }
 
     /**
      * @param mixed $payload
      * @return string
-     * @throws \Exception if unable to serialize
+     * @throws Exception if unable to serialize
      */
-    public function serialize($payload)
+    public function serialize(mixed $payload): string
     {
-        list($_, $dom) = $this->_future_serializeAsXml($payload);
+        list(, $dom) = $this->futureSerializeAsXml($payload);
         return $dom->saveXml();
     }
 
@@ -61,21 +69,22 @@ class XmlHandler extends MimeHandlerAdapter
      * @return string
      * @author Ted Zellers
      */
-    public function serialize_clean($payload)
+    public function serialize_clean(mixed $payload): string
     {
-        $xml = new \XMLWriter;
+        $xml = new XMLWriter;
         $xml->openMemory();
         $xml->startDocument('1.0','ISO-8859-1');
         $this->serialize_node($xml, $payload);
-        return $xml->outputMemory(true);
+        return $xml->outputMemory();
     }
 
     /**
-     * @param \XMLWriter $xmlw
+     * @param XMLWriter $xmlw
      * @param mixed $node to serialize
      * @author Ted Zellers
      */
-    public function serialize_node(&$xmlw, $node){
+    public function serialize_node(XMLWriter &$xmlw, mixed $node): void
+    {
         if (!is_array($node)){
             $xmlw->text($node);
         } else {
@@ -89,11 +98,12 @@ class XmlHandler extends MimeHandlerAdapter
 
     /**
      * @author Zack Douglas <zack@zackerydouglas.info>
+     * @throws DOMException
      */
-    private function _future_serializeAsXml($value, $node = null, $dom = null)
+    private function futureSerializeAsXml($value, $node = null, $dom = null): array
     {
         if (!$dom) {
-            $dom = new \DOMDocument;
+            $dom = new DOMDocument;
         }
         if (!$node) {
             if (!is_object($value)) {
@@ -106,11 +116,11 @@ class XmlHandler extends MimeHandlerAdapter
         if (is_object($value)) {
             $objNode = $dom->createElement(get_class($value));
             $node->appendChild($objNode);
-            $this->_future_serializeObjectAsXml($value, $objNode, $dom);
+            $this->futureSerializeObjectAsXml($value, $objNode, $dom);
         } else if (is_array($value)) {
             $arrNode = $dom->createElement('array');
             $node->appendChild($arrNode);
-            $this->_future_serializeArrayAsXml($value, $arrNode, $dom);
+            $this->futureSerializeArrayAsXml($value, $arrNode, $dom);
         } else if (is_bool($value)) {
             $node->appendChild($dom->createTextNode($value?'TRUE':'FALSE'));
         } else {
@@ -120,33 +130,33 @@ class XmlHandler extends MimeHandlerAdapter
     }
     /**
      * @author Zack Douglas <zack@zackerydouglas.info>
+     * @throws DOMException
      */
-    private function _future_serializeArrayAsXml($value, &$parent, &$dom)
+    private function futureSerializeArrayAsXml($value, $parent, DOMDocument $dom): void
     {
-        foreach ($value as $k => &$v) {
+        foreach ($value as $k => $v) {
             $n = $k;
             if (is_numeric($k)) {
-                $n = "child-{$n}";
+                $n = "child-$n";
             }
             $el = $dom->createElement($n);
             $parent->appendChild($el);
-            $this->_future_serializeAsXml($v, $el, $dom);
+            $this->futureSerializeAsXml($v, $el, $dom);
         }
-        return array($parent, $dom);
     }
     /**
      * @author Zack Douglas <zack@zackerydouglas.info>
+     * @throws DOMException
      */
-    private function _future_serializeObjectAsXml($value, &$parent, &$dom)
+    private function futureSerializeObjectAsXml($value, $parent, DOMDocument $dom): void
     {
-        $refl = new \ReflectionObject($value);
+        $refl = new ReflectionObject($value);
         foreach ($refl->getProperties() as $pr) {
             if (!$pr->isPrivate()) {
                 $el = $dom->createElement($pr->getName());
                 $parent->appendChild($el);
-                $this->_future_serializeAsXml($pr->getValue($value), $el, $dom);
+                $this->futureSerializeAsXml($pr->getValue($value), $el, $dom);
             }
         }
-        return array($parent, $dom);
     }
 }

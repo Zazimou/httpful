@@ -1,24 +1,30 @@
-<?php
+<?php declare(strict_types=1);
+
+use Httpful\Handlers\MimeHandlerAdapter;
+use Httpful\Handlers\XmlHandler;
+use Httpful\Httpful;
+use Httpful\Mime;
+
 require(__DIR__ . '/../bootstrap.php');
 
 // We can override the default parser configuration options be registering
 // a parser with different configuration options for a particular mime type
 
 // Example setting a namespace for the XMLHandler parser
-$conf = array('namespace' => 'http://example.com');
-\Httpful\Httpful::register(\Httpful\Mime::XML, new \Httpful\Handlers\XmlHandler($conf));
+$conf = array('namespace' => 'https://example.com');
+Httpful::register(Mime::XML, new XmlHandler($conf));
 
 // We can also add the parsers with our own...
-class SimpleCsvHandler extends \Httpful\Handlers\MimeHandlerAdapter
+class SimpleCsvHandler extends MimeHandlerAdapter
 {
     /**
      * Takes a response body, and turns it into
      * a two dimensional array.
      *
      * @param string $body
-     * @return mixed
+     * @return object|array|string|null
      */
-    public function parse($body)
+    public function parse(string $body): object|array|string|null
     {
         return str_getcsv($body);
     }
@@ -31,7 +37,7 @@ class SimpleCsvHandler extends \Httpful\Handlers\MimeHandlerAdapter
      * @param mixed $payload
      * @return string
      */
-    public function serialize($payload)
+    public function serialize(mixed $payload): string
     {
         $serialized = '';
         foreach ($payload as $line) {
@@ -41,4 +47,4 @@ class SimpleCsvHandler extends \Httpful\Handlers\MimeHandlerAdapter
     }
 }
 
-\Httpful\Httpful::register('text/csv', new SimpleCsvHandler());
+Httpful::register('text/csv', new SimpleCsvHandler());

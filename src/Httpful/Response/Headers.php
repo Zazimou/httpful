@@ -1,15 +1,20 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Httpful\Response;
 
-final class Headers implements \ArrayAccess, \Countable {
+use ArrayAccess;
+use Countable;
+use Exception;
+use const PREG_SPLIT_NO_EMPTY;
 
-    private $headers;
+final class Headers implements ArrayAccess, Countable {
+
+    private array $headers;
 
     /**
      * @param array $headers
      */
-    private function __construct($headers)
+    private function __construct(array $headers = [])
     {
         $this->headers = $headers;
     }
@@ -18,9 +23,9 @@ final class Headers implements \ArrayAccess, \Countable {
      * @param string $string
      * @return Headers
      */
-    public static function fromString($string)
+    public static function fromString(string $string): Headers
     {
-        $headers = preg_split("/(\r|\n)+/", $string, -1, \PREG_SPLIT_NO_EMPTY);
+        $headers = preg_split("/([\r\n])+/", $string, -1, PREG_SPLIT_NO_EMPTY);
         $parse_headers = array();
         for ($i = 1; $i < count($headers); $i++) {
             list($key, $raw_value) = explode(':', $headers[$i], 2);
@@ -44,7 +49,7 @@ final class Headers implements \ArrayAccess, \Countable {
      * @param string $offset
      * @return bool
      */
-    public function offsetExists($offset)
+    public function offsetExists(mixed $offset): bool
     {
         return $this->getCaseInsensitive($offset) !== null;
     }
@@ -53,7 +58,7 @@ final class Headers implements \ArrayAccess, \Countable {
      * @param string $offset
      * @return mixed
      */
-    public function offsetGet($offset)
+    public function offsetGet(mixed $offset): mixed
     {
         return $this->getCaseInsensitive($offset);
     }
@@ -61,26 +66,26 @@ final class Headers implements \ArrayAccess, \Countable {
     /**
      * @param string $offset
      * @param string $value
-     * @throws \Exception
+     * @throws Exception
      */
-    public function offsetSet($offset, $value)
+    public function offsetSet(mixed $offset, $value): void
     {
-        throw new \Exception("Headers are read-only.");
+        throw new Exception("Headers are read-only.");
     }
 
     /**
      * @param string $offset
-     * @throws \Exception
+     * @throws Exception
      */
-    public function offsetUnset($offset)
+    public function offsetUnset(mixed $offset): void
     {
-        throw new \Exception("Headers are read-only.");
+        throw new Exception("Headers are read-only.");
     }
 
     /**
      * @return int
      */
-    public function count()
+    public function count(): int
     {
         return count($this->headers);
     }
@@ -88,7 +93,7 @@ final class Headers implements \ArrayAccess, \Countable {
     /**
      * @return array
      */
-    public function toArray()
+    public function toArray(): array
     {
         return $this->headers;
     }

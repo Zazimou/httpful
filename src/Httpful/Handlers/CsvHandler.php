@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * Mime Type: text/csv
  * @author Raja Kapur <rajak@twistedthrottle.com>
@@ -6,14 +6,16 @@
 
 namespace Httpful\Handlers;
 
+use Exception;
+
 class CsvHandler extends MimeHandlerAdapter
 {
     /**
      * @param string $body
-     * @return mixed
-     * @throws \Exception
+     * @return array|null
+     * @throws Exception
      */
-    public function parse($body)
+    public function parse(string $body): array|null
     {
         if (empty($body))
             return null;
@@ -25,7 +27,7 @@ class CsvHandler extends MimeHandlerAdapter
         }
 
         if (empty($parsed))
-            throw new \Exception("Unable to parse response as CSV");
+            throw new Exception("Unable to parse response as CSV");
         return $parsed;
     }
 
@@ -33,7 +35,7 @@ class CsvHandler extends MimeHandlerAdapter
      * @param mixed $payload
      * @return string
      */
-    public function serialize($payload)
+    public function serialize(mixed $payload): string
     {
         $fp = fopen('php://temp/maxmemory:'. (6*1024*1024), 'r+');
         $i = 0;

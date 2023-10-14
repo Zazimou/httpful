@@ -12,6 +12,7 @@ namespace Httpful\Test;
 require(dirname(dirname(dirname(__FILE__))) . '/bootstrap.php');
 \Httpful\Bootstrap::init();
 
+use Httpful\Exception\JsonParseException;
 use Httpful\Httpful;
 use Httpful\Request;
 use Httpful\Mime;
@@ -216,7 +217,7 @@ X-My-Header:Value2\r\n";
             ->expectsType(Mime::JSON);
 
         $this->assertEquals(Mime::JSON, $r->expected_type);
-        $r->_curlPrep();
+        $r->prepareCurl();
         $this->assertStringContainsString('application/json', $r->raw_headers);
     }
 
@@ -226,7 +227,7 @@ X-My-Header:Value2\r\n";
         $r = Request::get('http://example.com/')
             ->addHeader('Accept', $accept);
 
-        $r->_curlPrep();
+        $r->prepareCurl();
         $this->assertStringContainsString($accept, $r->raw_headers);
         $this->assertEquals($accept, $r->headers['Accept']);
     }
@@ -237,7 +238,7 @@ X-My-Header:Value2\r\n";
             ->withUserAgent('ACME/1.2.3');
 
         $this->assertArrayHasKey('User-Agent', $r->headers);
-        $r->_curlPrep();
+        $r->prepareCurl();
         $this->assertStringContainsString('User-Agent: ACME/1.2.3', $r->raw_headers);
         $this->assertStringNotContainsString('User-Agent: HttpFul/1.0', $r->raw_headers);
 
@@ -245,7 +246,7 @@ X-My-Header:Value2\r\n";
             ->withUserAgent('');
 
         $this->assertArrayHasKey('User-Agent', $r->headers);
-        $r->_curlPrep();
+        $r->prepareCurl();
         $this->assertStringContainsString('User-Agent:', $r->raw_headers);
         $this->assertStringNotContainsString('User-Agent: HttpFul/1.0', $r->raw_headers);
     }
@@ -510,7 +511,7 @@ Content-Type: text/plain; charset=utf-8\r\n", $req);
     function testMissingBodyContentType()
     {
         $body = 'A string';
-        $request = Request::post(HttpfulTest::TEST_URL, $body)->_curlPrep();
+        $request = Request::post(HttpfulTest::TEST_URL, $body)->prepareCurl();
         $this->assertEquals($body, $request->serialized_payload);
     }
 
@@ -611,7 +612,7 @@ Transfer-Encoding: chunked\r\n", $request);
 
         try {
             $result = $handler->parse('invalid{json');
-        } catch (\Httpful\Exception\JsonParseException $e) {
+        } catch (JsonParseException $e) {
             $this->assertEquals('Unable to parse response as JSON: ' . json_last_error_msg(), $e->getMessage());
             return;
         }
@@ -697,7 +698,7 @@ Transfer-Encoding: chunked\r\n", $request);
 
 class DemoMimeHandler extends \Httpful\Handlers\MimeHandlerAdapter
 {
-    public function parse($body)
+    public function parse(mixed $body): string
     {
         return 'custom parse';
     }
